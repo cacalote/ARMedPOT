@@ -1,0 +1,9 @@
+[Unit]
+Description=Docker Container armhf-honeytrap restarter
+
+[Timer]
+OnBootSec=1h
+OnUnitActiveSec=2d
+
+[Install]
+WantedBy=multi-user.target

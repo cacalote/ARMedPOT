@@ -1,0 +1,6 @@
+**/*.log
+**/.setting
+.setting
+.main
+make.sh
+

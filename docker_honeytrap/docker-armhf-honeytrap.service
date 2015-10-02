@@ -1,0 +1,26 @@
+[Unit]
+Description=Docker Container with Honeypot armhf-honeytrap
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+
+ExecStartPre=-/sbin/iptables -w -A INPUT -p tcp --syn -m state --state NEW -m multiport ! --dports 21,22,42,80,161,135,443,445 -j NFQUEUE
+ExecStartPre=-/sbin/iptables -w -A INPUT -p tcp --syn -m state --state NEW -m multiport ! --dports 502,1433,3306,5060,5061,8080,64295,64296 -j NFQUEUE
+ExecStartPre=-/usr/bin/docker rmi $(docker images -q -f dangling=true)
+ExecStartPre=-/usr/bin/docker rm $(docker ps -q -f status=exited)
+ExecStartPre=-/usr/bin/docker kill armhf-honeytrap
+ExecStartPre=-/usr/bin/docker rm --volumes --force armhf-honeytrap
+ExecStartPre=-/usr/bin/docker pull armedpot/armhf-honeytrap:0.1
+ExecStart=/usr/bin/docker run --rm --name armhf-honeytrap --cpu-shares=820 --cap-add=NET_ADMIN --net=host --volume=/armedpot/honeytrap --volume=/opt/armedpot/ews/cfg:/armedpot/ews/cfg --volume=/opt/armedpot/ews/log:/armedpot/ews/log armedpot/armhf-honeytrap:0.1
+ExecStop=-/usr/bin/docker stop --time=60 armhf-honeytrap
+ExecStopPost=-/usr/bin/docker rm --volumes --force armhf-honeytrap
+ExecStopPost=-/sbin/iptables -w -D INPUT -p tcp --syn -m state --state NEW -m multiport ! --dports 21,22,42,80,161,135,443,445 -j NFQUEUE
+ExecStopPost=-/sbin/iptables -w -D INPUT -p tcp --syn -m state --state NEW -m multiport ! --dports 502,1433,3306,5060,5061,8080,64295,64296 -j NFQUEUE
+
+Restart=always
+RestartSec=90
+
+[Install]
+WantedBy=multi-user.target

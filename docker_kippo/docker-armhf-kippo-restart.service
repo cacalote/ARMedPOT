@@ -1,0 +1,10 @@
+[Unit]
+Description=Docker Container armhf-kippo restart service
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/bin/systemctl restart docker-armhf-kippo.service
+
+[Install]
+WantedBy=multi-user.target

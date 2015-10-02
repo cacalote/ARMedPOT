@@ -1,0 +1,22 @@
+[Unit]
+Description=Docker Container with Honeypot armhf-kippo
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+
+ExecStartPre=-/usr/bin/docker rmi $(docker images -q -f dangling=true)
+ExecStartPre=-/usr/bin/docker rm $(docker ps -q -f status=exited)
+ExecStartPre=-/usr/bin/docker kill armhf-kippo
+ExecStartPre=-/usr/bin/docker rm --volumes --force armhf-kippo
+ExecStartPre=-/usr/bin/docker pull armedpot/armhf-kippo:0.1
+ExecStart=/usr/bin/docker run --rm --name armhf-kippo --cpu-shares=820 --publish=22:2222 --volume=/armedpot/kippo --volume=/opt/armedpot/ews/cfg:/armedpot/ews/cfg --volume=/opt/armedpot/ews/log:/armedpot/ews/log armedpot/armhf-kippo:0.1
+ExecStop=-/usr/bin/docker stop --time=60 armhf-kippo
+ExecStopPost=-/usr/bin/docker rm --volumes --force armhf-kippo
+
+Restart=always
+RestartSec=90
+
+[Install]
+WantedBy=multi-user.target
